@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Fashion Price Finder</title>
+<meta charset="UTF-8">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: Arial, sans-serif; background: #f0f0f0; padding: 20px; }
+.container { max-width: 900px; margin: 0 auto; }
+h1 { text-align: center; color: #1a1a1a; font-size: 2rem; margin-bottom: 6px; }
+.subtitle { text-align: center; color: #888; font-size: 13px; margin-bottom: 24px; }
+.search-box { display: flex; gap: 10px; margin-bottom: 24px; background: white; padding: 16px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.08); }
+.search-box input { flex: 1; padding: 12px 16px; border: 2px solid #e0e0e0; border-radius: 8px; font-size: 15px; outline: none; }
+.search-box input:focus { border-color: #1a1a1a; }
+.search-box button { padding: 12px 24px; background: #1a1a1a; color: white; border: none; border-radius: 8px; font-size: 15px; cursor: pointer; }
+.search-box button:hover { background: #333; }
+.best-deal { background: linear-gradient(135deg, #1a1a1a, #2d2d2d); color: white; padding: 24px; border-radius: 14px; margin-bottom: 20px; }
+.badge { display: inline-block; background: #FFD700; color: #1a1a1a; font-size: 11px; font-weight: bold; padding: 4px 12px; border-radius: 20px; margin-bottom: 12px; }
+.best-deal h2 { font-size: 1.3rem; margin-bottom: 6px; }
+.best-deal .store { color: #aaa; font-size: 13px; margin-bottom: 12px; }
+.best-deal .price { font-size: 2.5rem; font-weight: bold; color: #FFD700; margin-bottom: 6px; }
+.best-deal .orig { font-size: 13px; color: #888; text-decoration: line-through; margin-bottom: 6px; }
+.best-deal .discount { font-size: 13px; color: #FFD700; margin-bottom: 10px; }
+.best-deal .savings { color: #90EE90; font-size: 14px; margin-bottom: 14px; }
+.best-deal .note { font-size: 12px; color: #aaa; font-style: italic; margin-bottom: 14px; }
+.buy-btn { display: inline-block; background: #FFD700; color: #1a1a1a; padding: 10px 22px; border-radius: 8px; text-decoration: none; font-weight: bold; font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 20px; }
+.stat-card { background: white; border-radius: 10px; padding: 16px; text-align: center; }
+.stat-card .num { font-size: 1.5rem; font-weight: bold; color: #1a1a1a; }
+.stat-card .lbl { font-size: 12px; color: #999; margin-top: 4px; }
+.results-title { font-size: 16px; font-weight: bold; color: #333; margin-bottom: 10px; }
+.results { display: flex; flex-direction: column; gap: 8px; }
+.result-card { background: white; padding: 16px 20px; border-radius: 10px; display: flex; justify-content: space-between; align-items: center; border: 1.5px solid #eee; }
+.result-card.first { border: 2px solid #FFD700; background: #fffdf0; }
+.result-card.second { border: 1.5px solid #C0C0C0; }
+.result-card.third { border: 1.5px solid #CD7F32; }
+.left-col { display: flex; align-items: center; gap: 14px; }
+.medal { font-size: 1.6rem; }
+.store-name-text { font-weight: bold; font-size: 15px; }
+.product-text { font-size: 12px; color: #888; margin-top: 2px; }
+.discount-text { font-size: 11px; color: #27ae60; margin-top: 2px; }
+.right-col { display: flex; align-items: center; gap: 16px; }
+.price-now { font-size: 1.3rem; font-weight: bold; color: #1a1a1a; text-align: right; }
+.first .price-now { color: #27ae60; }
+.price-orig { font-size: 12px; color: #bbb; text-decoration: line-through; }
+.visit-btn { padding: 8px 18px; background: #1a1a1a; color: white; border-radius: 6px; text-decoration: none; font-size: 13px; white-space: nowrap; }
+.note-banner { background: #fff8e1; border: 1px solid #FFD700; border-radius: 10px; padding: 12px 16px; font-size: 13px; color: #7d6608; margin-bottom: 16px; }
+.loading { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; }
+.spinner { font-size: 2.5rem; display: inline-block; animation: spin 1s linear infinite; margin-bottom: 16px; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading p { color: #555; font-size: 16px; }
+.loading small { color: #aaa; font-size: 13px; }
+.empty { text-align: center; padding: 60px 20px; background: white; border-radius: 12px; }
+.empty .icon { font-size: 3.5rem; margin-bottom: 12px; }
+.empty h3 { color: #555; margin-bottom: 8px; }
+.empty p { color: #aaa; font-size: 14px; }
+.error { background: #fff0f0; border: 1px solid #ffcccc; border-radius: 10px; padding: 20px; text-align: center; color: #c0392b; }
+.error code { display: inline-block; background: #f5f5f5; padding: 8px 16px; border-radius: 6px; margin-top: 10px; font-size: 13px; color: #333; }
+</style>
+</head>
+<body>
+<div class="container">
+<h1>👗 Fashion Price Finder</h1>
+<p class="subtitle">Compare prices across Amazon, Flipkart, Myntra, Meesho, Ajio and more</p>
+<div class="search-box">
+<input type="text" id="searchInput" placeholder="Type dress name e.g. Anarkali kurta, Banarasi saree..." />
+<button id="searchBtn">🔍 Find Best Price</button>
+</div>
+<div id="output">
+<div class="empty">
+<div class="icon">👗</div>
+<h3>Search any dress or clothing item</h3>
+<p>Type a product name above and press Enter</p>
+</div>
+</div>
+</div>
+
+<script>
+document.getElementById('searchBtn').addEventListener('click', function() {
+  runSearch();
+});
+
+document.getElementById('searchInput').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter') { runSearch(); }
+});
+
+function runSearch() {
+  var query = document.getElementById('searchInput').value.trim();
+  if (!query) { alert('Please type a product name!'); return; }
+
+  document.getElementById('output').innerHTML =
+    '<div class="loading"><div class="spinner">🔍</div>' +
+    '<p>Searching prices for <strong>' + query + '</strong></p>' +
+    '<small>Checking Amazon, Flipkart, Myntra, Meesho, Ajio...</small></div>';
+
+  fetch('/search', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ query: query })
+  })
+  .then(function(res) { return res.json(); })
+  .then(function(data) {
+    if (!data.results || data.results.length === 0) {
+      document.getElementById('output').innerHTML =
+        '<div class="empty"><div class="icon">😕</div>' +
+        '<h3>No results found for "' + query + '"</h3>' +
+        '<p>Try: floral kurta or silk saree</p></div>';
+      return;
+    }
+    showResults(data, query);
+  })
+  .catch(function(err) {
+    document.getElementById('output').innerHTML =
+      '<div class="error"><p>Cannot connect to server!</p>' +
+      '<p style="margin-top:8px;font-size:13px">Make sure server is running</p>' +
+      '<code>python -m uvicorn main:app --reload</code></div>';
+  });
+}
+
+function showResults(data, query) {
+  var results  = data.results;
+  var cheapest = data.cheapest;
+  var savings  = data.savings;
+  var highest  = data.highest;
+  var isEst = results[0] && results[0].note && results[0].note.indexOf('Estimated') !== -1;
+
+  var html = '';
+
+  if (isEst) {
+    html += '<div class="note-banner">⚠️ Showing estimated price ranges. Click Visit on any store to see exact live price.</div>';
+  }
+
+  html += '<div class="best-deal">';
+  html += '<span class="badge">🏆 BEST DEAL FOUND</span>';
+  html += '<h2>' + (cheapest.name || query) + '</h2>';
+  html += '<div class="store">📦 ' + cheapest.store + '</div>';
+  html += '<div class="price">' + cheapest.price_display + '</div>';
+  if (cheapest.original_price) { html += '<div class="orig">' + cheapest.original_price + '</div>'; }
+  if (cheapest.discount) { html += '<div class="discount">🏷️ ' + cheapest.discount + '</div>'; }
+  if (savings > 0 && highest) {
+    html += '<div class="savings">💰 Save Rs.' + savings.toLocaleString() + ' vs ' + highest.store + ' (' + highest.price_display + ')</div>';
+  }
+  if (cheapest.note) { html += '<div class="note">' + cheapest.note + '</div>'; }
+  html += '<a href="' + cheapest.link + '" target="_blank" class="buy-btn">🛒 Visit ' + cheapest.store + '</a>';
+  html += '</div>';
+
+  html += '<div class="stats">';
+  html += '<div class="stat-card"><div class="num">' + results.length + '</div><div class="lbl">Stores Found</div></div>';
+  html += '<div class="stat-card"><div class="num">' + cheapest.price_display + '</div><div class="lbl">Lowest Price</div></div>';
+  html += '<div class="stat-card"><div class="num">Rs.' + savings.toLocaleString() + '</div><div class="lbl">Max Savings</div></div>';
+  html += '</div>';
+
+  html += '<div class="results-title">All Prices — Cheapest First</div>';
+  html += '<div class="results">';
+
+  for (var i = 0; i < results.length; i++) {
+    var r = results[i];
+    var medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : '#' + (i + 1);
+    var cls = i === 0 ? 'first' : i === 1 ? 'second' : i === 2 ? 'third' : '';
+    html += '<div class="result-card ' + cls + '">';
+    html += '<div class="left-col">';
+    html += '<div class="medal">' + medal + '</div>';
+    html += '<div>';
+    html += '<div class="store-name-text">' + r.store + '</div>';
+    html += '<div class="product-text">' + (r.name || query) + '</div>';
+    if (r.discount) { html += '<div class="discount-text">🏷️ ' + r.discount + '</div>'; }
+    html += '</div></div>';
+    html += '<div class="right-col">';
+    html += '<div><div class="price-now">' + r.price_display + '</div>';
+    if (r.original_price) { html += '<div class="price-orig">' + r.original_price + '</div>'; }
+    html += '</div>';
+    html += '<a href="' + r.link + '" target="_blank" class="visit-btn">Visit →</a>';
+    html += '</div></div>';
+  }
+
+  html += '</div>';
+  document.getElementById('output').innerHTML = html;
+}
+</script>
+</body>
+</html>
